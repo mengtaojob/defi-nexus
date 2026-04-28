@@ -1,11 +1,14 @@
+import { RouteOutlet } from './app/router/RouteOutlet'
+import { RouterProvider } from './app/router/router'
 import { AppShell } from './components/layout/AppShell'
-import { DashboardPage } from './pages/DashboardPage'
 
 function App() {
   return (
-    <AppShell>
-      <DashboardPage />
-    </AppShell>
+    <RouterProvider>
+      <AppShell>
+        <RouteOutlet />
+      </AppShell>
+    </RouterProvider>
   )
 }
 
