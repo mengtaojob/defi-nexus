@@ -4,10 +4,12 @@ import { Sidebar } from './Sidebar'
 
 export function AppShell({ children }: PropsWithChildren) {
   return (
-    <div>
+    <div className="app-shell">
       <Header />
-      <Sidebar />
-      <main>{children}</main>
+      <div className="app-body">
+        <Sidebar />
+        <main className="app-main">{children}</main>
+      </div>
     </div>
   )
 }

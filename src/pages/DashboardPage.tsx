@@ -6,10 +6,14 @@ export function DashboardPage() {
   const portfolio = usePortfolio()
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <PortfolioSummary summary={portfolio} />
-      <PositionTable positions={portfolio.positions} />
+    <div className="page">
+      <h2 className="page-title">Dashboard</h2>
+      <section className="page-card">
+        <PortfolioSummary summary={portfolio} />
+      </section>
+      <section className="page-card">
+        <PositionTable positions={portfolio.positions} />
+      </section>
     </div>
   )
 }

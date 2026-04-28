@@ -3,10 +3,12 @@ import { ConnectWalletButton } from '../components/wallet/ConnectWalletButton'
 
 export function WalletPage() {
   return (
-    <div>
-      <h1>Wallet</h1>
-      <ConnectWalletButton />
-      <ChainSwitcher />
+    <div className="page">
+      <h2 className="page-title">Wallet</h2>
+      <section className="page-card page-actions">
+        <ConnectWalletButton />
+        <ChainSwitcher />
+      </section>
     </div>
   )
 }

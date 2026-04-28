@@ -20,24 +20,37 @@ function getPathname() {
   return window.location.pathname || '/'
 }
 
+function normalizePath(path: string): string {
+  if (path.length > 1 && path.endsWith('/')) {
+    return path.slice(0, -1)
+  }
+
+  return path
+}
+
 export function RouterProvider({ children }: PropsWithChildren) {
-  const [pathname, setPathname] = useState<string>(getPathname)
+  const [pathname, setPathname] = useState<string>(normalizePath(getPathname()))
 
   useEffect(() => {
-    const onPopState = () => setPathname(getPathname())
+    const onPopState = () => setPathname(normalizePath(getPathname()))
 
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const navigate = useCallback((path: string) => {
-    if (path === pathname) {
-      return
-    }
+  const navigate = useCallback(
+    (path: string) => {
+      const nextPath = normalizePath(path)
 
-    window.history.pushState({}, '', path)
-    setPathname(path)
-  }, [pathname])
+      if (nextPath === pathname) {
+        return
+      }
+
+      window.history.pushState({}, '', nextPath)
+      setPathname(nextPath)
+    },
+    [pathname],
+  )
 
   const value = useMemo(
     () => ({
@@ -64,10 +77,13 @@ interface NavLinkProps {
   to: string
   children: string
   className?: string
+  activeClassName?: string
 }
 
-export function NavLink({ to, children, className }: NavLinkProps) {
-  const { navigate } = useRouter()
+export function NavLink({ to, children, className, activeClassName }: NavLinkProps) {
+  const { pathname, navigate } = useRouter()
+  const normalizedTo = normalizePath(to)
+  const isActive = pathname === normalizedTo
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (
@@ -81,11 +97,20 @@ export function NavLink({ to, children, className }: NavLinkProps) {
     }
 
     event.preventDefault()
-    navigate(to)
+    navigate(normalizedTo)
   }
 
+  const classes = [className, isActive ? activeClassName : undefined]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <a href={to} onClick={handleClick} className={className}>
+    <a
+      href={normalizedTo}
+      onClick={handleClick}
+      className={classes}
+      aria-current={isActive ? 'page' : undefined}
+    >
       {children}
     </a>
   )
