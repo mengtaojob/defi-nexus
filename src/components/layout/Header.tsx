@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { SUPPORTED_CHAINS } from '../../config/constants'
 import { formatAddress } from '../../lib/formatting/address'
+import { ChainSwitcher } from '../wallet/ChainSwitcher'
 
 function getChainLabel(chainId?: number): string {
   if (!chainId) {
@@ -41,6 +42,8 @@ export function Header() {
               {address ? formatAddress(address) : 'No wallet connected'}
             </span>
           </div>
+
+          <ChainSwitcher />
 
           {isConnected ? (
             <button className="wallet-action wallet-disconnect" type="button" onClick={() => disconnect()}>
