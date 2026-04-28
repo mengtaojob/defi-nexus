@@ -1,19 +1,16 @@
-import { createConfig, http } from 'wagmi'
-import { injected, walletConnect } from 'wagmi/connectors'
+import { createConfig, createStorage, http } from 'wagmi'
 import { env } from '../../config/env'
+import { createWalletConnectors } from './connectors'
 import { supportedWagmiChains } from './chains'
-
-const walletConnectConnector =
-  env.walletConnectProjectId.length > 0
-    ? [walletConnect({ projectId: env.walletConnectProjectId })]
-    : []
 
 export const wagmiConfig = createConfig({
   chains: [...supportedWagmiChains],
-  connectors: [injected(), ...walletConnectConnector],
+  connectors: createWalletConnectors(),
+  ssr: false,
+  storage: createStorage({ storage: window.localStorage }),
   transports: {
-    1: http(),
-    42161: http(),
-    8453: http(),
+    1: http(env.rpcUrls[1]),
+    42161: http(env.rpcUrls[42161]),
+    8453: http(env.rpcUrls[8453]),
   },
 })

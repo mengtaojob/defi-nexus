@@ -3,5 +3,9 @@ import { WagmiProvider as WagmiRootProvider } from 'wagmi'
 import { wagmiConfig } from '../../lib/wagmi/config'
 
 export function WagmiProvider({ children }: PropsWithChildren) {
-  return <WagmiRootProvider config={wagmiConfig}>{children}</WagmiRootProvider>
+  return (
+    <WagmiRootProvider config={wagmiConfig} reconnectOnMount>
+      {children}
+    </WagmiRootProvider>
+  )
 }
