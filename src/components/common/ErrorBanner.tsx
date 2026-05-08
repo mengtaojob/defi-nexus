@@ -3,5 +3,9 @@ interface ErrorBannerProps {
 }
 
 export function ErrorBanner({ message }: ErrorBannerProps) {
-  return <p role="alert">{message}</p>
+  return (
+    <p className="error-banner" role="alert">
+      {message}
+    </p>
+  )
 }

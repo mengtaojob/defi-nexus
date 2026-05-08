@@ -3,20 +3,12 @@ import type { Address } from 'viem'
 import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { useErc20Transfer } from '../../hooks/erc20/useErc20Transfer'
-
-function parseDecimals(value: string): number | null {
-  const parsed = Number(value)
-
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 255) {
-    return null
-  }
-
-  return parsed
-}
+import { useChainGuard } from '../../hooks/wallet/useChainGuard'
+import { isPositiveAmount, parseDecimals } from '../../lib/validation/token'
 
 export function TransferForm() {
-  const { address, chainId, status } = useAccount()
-  const isConnected = status === 'connected'
+  const { address, chainId } = useAccount()
+  const chainGuard = useChainGuard()
 
   const [token, setToken] = useState('')
   const [to, setTo] = useState('')
@@ -39,8 +31,8 @@ export function TransferForm() {
     event.preventDefault()
     setFormError(null)
 
-    if (!isConnected || !address || !chainId) {
-      setFormError('Connect wallet before transferring.')
+    if (!chainGuard.canTransact || !address || !chainId) {
+      setFormError(chainGuard.guardMessage ?? 'Wallet is not ready for transactions.')
       return
     }
 
@@ -54,7 +46,7 @@ export function TransferForm() {
       return
     }
 
-    if (!amount || Number(amount) <= 0) {
+    if (!isPositiveAmount(amount)) {
       setFormError('Enter a valid amount.')
       return
     }
@@ -106,6 +98,8 @@ export function TransferForm() {
         </label>
       </div>
 
+      {chainGuard.guardMessage ? <p className="token-form-warning">{chainGuard.guardMessage}</p> : null}
+
       {(formError || transferTx.error) ? (
         <p className="token-form-error" role="alert">
           {formError ?? transferTx.error?.message}
@@ -119,7 +113,7 @@ export function TransferForm() {
       <button
         className="wallet-action wallet-connect"
         type="submit"
-        disabled={!isConnected || transferTx.isSubmitting || transferTx.isConfirming}
+        disabled={!chainGuard.canTransact || transferTx.isSubmitting || transferTx.isConfirming}
       >
         {transferTx.isSubmitting
           ? 'Submitting...'

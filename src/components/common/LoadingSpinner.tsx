@@ -1,3 +1,3 @@
 export function LoadingSpinner() {
-  return <p>Loading...</p>
+  return <p className="loading-spinner">Loading portfolio...</p>
 }

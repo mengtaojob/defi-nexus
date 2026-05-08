@@ -5,4 +5,5 @@ export interface TrackedTransaction {
   status: TxStatus
   summary: string
   chainId: number
+  createdAt: number
 }

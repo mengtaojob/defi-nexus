@@ -4,20 +4,12 @@ import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { useAllowance } from '../../hooks/erc20/useAllowance'
 import { useErc20Approve } from '../../hooks/erc20/useErc20Approve'
-
-function parseDecimals(value: string): number | null {
-  const parsed = Number(value)
-
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 255) {
-    return null
-  }
-
-  return parsed
-}
+import { useChainGuard } from '../../hooks/wallet/useChainGuard'
+import { isPositiveAmount, parseDecimals } from '../../lib/validation/token'
 
 export function ApproveForm() {
-  const { address, chainId, status } = useAccount()
-  const isConnected = status === 'connected'
+  const { address, chainId } = useAccount()
+  const chainGuard = useChainGuard()
 
   const [token, setToken] = useState('')
   const [spender, setSpender] = useState('')
@@ -41,8 +33,8 @@ export function ApproveForm() {
     event.preventDefault()
     setFormError(null)
 
-    if (!isConnected || !address || !chainId) {
-      setFormError('Connect wallet before approving.')
+    if (!chainGuard.canTransact || !address || !chainId) {
+      setFormError(chainGuard.guardMessage ?? 'Wallet is not ready for transactions.')
       return
     }
 
@@ -56,7 +48,7 @@ export function ApproveForm() {
       return
     }
 
-    if (!amount || Number(amount) <= 0) {
+    if (!isPositiveAmount(amount)) {
       setFormError('Enter a valid amount.')
       return
     }
@@ -109,9 +101,10 @@ export function ApproveForm() {
       </div>
 
       <p className="token-form-meta">
-        Current allowance:{' '}
-        {allowance.data !== undefined ? allowance.data.toString() : 'N/A'}
+        Current allowance: {allowance.data !== undefined ? allowance.data.toString() : 'N/A'}
       </p>
+
+      {chainGuard.guardMessage ? <p className="token-form-warning">{chainGuard.guardMessage}</p> : null}
 
       {(formError || approveTx.error) ? (
         <p className="token-form-error" role="alert">
@@ -126,7 +119,7 @@ export function ApproveForm() {
       <button
         className="wallet-action wallet-connect"
         type="submit"
-        disabled={!isConnected || approveTx.isSubmitting || approveTx.isConfirming}
+        disabled={!chainGuard.canTransact || approveTx.isSubmitting || approveTx.isConfirming}
       >
         {approveTx.isSubmitting
           ? 'Submitting...'

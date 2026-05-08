@@ -4,6 +4,7 @@ import type { Account, Address } from 'viem'
 import { parseUnits } from 'viem'
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import { erc20Abi } from '../../abi/erc20'
+import { mapChainError } from '../../lib/errors/mapChainError'
 import { queryKeys } from '../../lib/query/keys'
 import { useTxStore } from '../../store/tx.store'
 
@@ -47,6 +48,7 @@ export function useErc20Approve() {
       chainId: write.variables.chainId,
       status: 'pending',
       summary: 'ERC20 approval',
+      createdAt: Date.now(),
     })
   }, [addTransaction, write.data, write.variables?.chainId])
 
@@ -85,14 +87,18 @@ export function useErc20Approve() {
   const approve = async ({ token, spender, amount, decimals, chainId, owner }: ApproveParams) => {
     const parsedAmount = parseUnits(amount, decimals)
 
-    await write.writeContractAsync({
-      abi: erc20Abi,
-      chainId,
-      address: token,
-      functionName: 'approve',
-      args: [spender, parsedAmount],
-      account: owner,
-    })
+    try {
+      await write.writeContractAsync({
+        abi: erc20Abi,
+        chainId,
+        address: token,
+        functionName: 'approve',
+        args: [spender, parsedAmount],
+        account: owner,
+      })
+    } catch (error) {
+      throw mapChainError(error)
+    }
   }
 
   return {
@@ -101,6 +107,6 @@ export function useErc20Approve() {
     isSubmitting: write.isPending,
     isConfirming: receipt.isLoading,
     isSuccess: receipt.isSuccess,
-    error: write.error ?? receipt.error,
+    error: write.error ? mapChainError(write.error) : receipt.error ? mapChainError(receipt.error) : null,
   }
 }

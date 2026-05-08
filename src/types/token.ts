@@ -7,4 +7,5 @@ export interface TokenConfig {
   symbol: string
   name: string
   decimals: number
+  priceUsd: number
 }
